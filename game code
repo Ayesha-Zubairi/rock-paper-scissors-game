@@ -1,0 +1,465 @@
+import sys
+import pygame
+import random
+import pygame as pg
+
+pygame.init()
+
+# icon
+icon = pygame.image.load("rpss.jpg")
+pygame.display.set_icon(icon)
+
+# descriptions
+gray = (119, 118, 110)
+black = (0, 0, 0)
+blue = (0, 0, 200)
+bright_red = (255, 0, 0)
+bright_green = (0, 255, 0)
+bright_blue = (0, 0, 255)
+green = (0, 200, 0)
+yellow = (255, 255, 0)
+red = (200, 0, 0)
+lime = (0, 255, 0)
+pastel_yellow = (255, 230, 102)
+orange_red = (255, 64, 25)
+
+pygame.display.set_caption("ROCK IT UP!")
+
+running = False
+# background image
+screen = pygame.display.set_mode((800, 600))
+background_image = pygame.image.load("back.jpg")
+background_image = pygame.transform.scale(background_image, (800, 600))
+instruction_background = pygame.image.load("instruction1.jpg")
+instruction_background = pygame.transform.scale(instruction_background, (800, 600))
+
+
+# text object function
+def text_object(text, font) :
+    text_surface = font.render(text, True, (0, 0, 0))
+    return text_surface, text_surface.get_rect()
+
+
+class Button() :
+    def __init__(self, x, y, pos, width, height) :
+        # Initializing the Display
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.pos = pos
+
+    def clicked(self, pos) :
+        # Adding the clicking function
+        self.pos = pg.mouse.get_pos()
+        if self.pos[0] > self.x and self.pos[0] < self.x + self.width :
+            if self.pos[1] > self.y and self.pos[1] < self.y + self.height :
+                return True
+        return False
+
+
+class rpsGame() :
+    def __init__(self) :
+        # Setting the window screen
+        pg.init()
+
+        self.screen = pg.display.set_mode((960, 640))
+        # Title
+        pg.display.set_caption("ROCK IT UP!")
+        icon = pygame.image.load("rpss.jpg")
+        pygame.display.set_icon(icon)
+        # Image
+        self.bg = pg.image.load("background.jpg")
+        self.r_btn = pg.image.load("r_button.png").convert_alpha()
+        self.p_btn = pg.image.load("p_button.png").convert_alpha()
+        self.s_btn = pg.image.load("s_button.png").convert_alpha()
+
+        self.choose_rock = pg.image.load("rock.png").convert_alpha()
+        self.choose_paper = pg.image.load("paper.png").convert_alpha()
+        self.choose_scissors = pg.image.load("scissors.png").convert_alpha()
+
+        self.font = pg.font.Font(('Splatch.ttf'), 90)
+        self.text = self.font.render(f" ", True, (255, 255, 255))
+
+        # Image position
+        self.screen.blit(self.bg, (0, 0))
+        self.screen.blit(self.r_btn, (20, 500))
+        self.screen.blit(self.p_btn, (330, 500))
+        self.screen.blit(self.s_btn, (640, 500))
+
+        self.rock_btn = Button(30, 520, (30, 520), 300, 140)
+        self.paper_btn = Button(340, 520, (340, 520), 300, 140)
+        self.scissors_btn = Button(640, 520, (640, 520), 300, 140)
+
+        # Initiating SCORE
+        self.pl_score = 0
+        self.pc_score = 0
+
+
+    def player(self) :
+        # Addinng functionality for player
+        if self.rock_btn.clicked(30) :
+            self.p_option = "rock"
+            self.screen.blit(self.choose_rock, (120, 200))
+        elif self.paper_btn.clicked(340) :
+            self.p_option = "paper"
+            self.screen.blit(self.choose_paper, (120, 200))
+        else :
+            self.scissors_btn.clicked(640)
+            self.p_option = "scissors"
+            self.screen.blit(self.choose_scissors, (120, 200))
+
+        return self.p_option
+
+    def computer(self) :
+        # Function performed by PC
+        self.pc_random_choice = " "
+        option = ["rock", "paper", "scissors"]
+        pc_choice = random.choice(list(option))
+        if pc_choice == "rock" :
+            self.pc_random_choice = "rock"
+            pc_choice = self.choose_rock
+        elif pc_choice == "paper" :
+            self.pc_random_choice = "paper"
+            pc_choice = self.choose_paper
+        else :
+            self.pc_random_choice = "scissors"
+            pc_choice = self.choose_scissors
+        pc_option = self.screen.blit(pc_choice, (600, 200))
+        return pc_option
+
+    def pl_score_cache(self) :
+        # Scoring FOR player
+
+        self.pl_score = 0
+        self.pc_score = 0
+
+        pl = self.p_option
+        pc = self.pc_random_choice
+        if pl == "rock" and pc == "paper" or pl == "paper" and pc == "scissors" or pl == "scissors" and pc == "rock" :
+            self.pc_score += 1
+        elif pl == pc :
+            pass
+        else :
+            self.pl_score += 1
+        return self.pl_score
+
+    def pc_score_cache(self) :
+        # Scoring for PC
+
+        self.pl_score = 0
+        self.pc_score = 0
+
+        pl = self.p_option
+        pc = self.pc_random_choice
+
+        if pl == "rock" and pc == "paper" or pl == "paper" and pc == "scissors" or pl == "scissors" and pc == "rock" :
+            self.pc_score += 1
+
+        elif pl == pc :
+            pass
+        else :
+            self.pl_score += 1
+
+        return self.pc_score
+
+    def image_reset(self) :
+        # Reseting the Image
+        self.screen.blit(self.text, (330, 0))
+        self.text = self.font.render(" ", True, (0, 0, 0))
+        self.screen.blit(self.bg, (0, 0))
+        self.screen.blit(self.r_btn, (20, 500))
+        self.screen.blit(self.p_btn, (330, 500))
+        self.screen.blit(self.s_btn, (640, 500))
+        pass
+
+    def game_loop(self) :
+        run = True
+        rps_game = rpsGame()
+
+
+
+        while run :
+            # Updating the display
+            pg.display.update()
+            self.screen.blit(self.text, (330, 0))
+
+            for event in pg.event.get() :
+
+                # For Exit
+                if event.type == pg.QUIT :
+                    run = False
+                if event.type == pg.KEYDOWN :
+                    if event.key == pg.K_q :
+                        run = False
+
+                # Action Take Place
+                if event.type == pg.MOUSEBUTTONDOWN :
+                    if self.rock_btn.clicked(30) or self.paper_btn.clicked(340) or self.scissors_btn.clicked(640) :
+                        rps_game.image_reset()
+                        rps_game.player()
+                        rps_game.computer()
+
+                        self.pl_score += rps_game.pl_score_cache()
+                        self.pc_score += rps_game.pc_score_cache()
+                        self.text = self.font.render(f"{self.pl_score}: {self.pc_score}", True, (255, 255, 255))
+
+
+
+                        small_text = pygame.font.SysFont('lucidaconsole', 20)
+
+                        text_surface, text_rect = text_object("COMPUTER", small_text)
+                        text_rect.center = ((600 + (150 / 2)), (0 + (50 / 2)))
+                        screen.blit(text_surface, text_rect)
+
+                        text_surface, text_rect = text_object("USER", small_text)
+                        text_rect.center = ((150 + (150 / 2)), (0 + (50 / 2)))
+                        screen.blit(text_surface, text_rect)
+            winner = 5
+            if winner == self.pl_score:
+                flow()
+
+            elif winner == self.pc_score:
+                floww()
+
+            else:
+                game
+
+
+
+        pg.display.flip()
+
+
+        pg.quit()
+def flow():
+    BLACK = (0, 0, 0)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (0, 0, 255)
+
+
+    pygame.init()
+    screen = pygame.display.set_mode((600, 550))
+    pg.display.set_caption("ROCK IT UP!")
+    icon = pygame.image.load("rpss.jpg")
+    pygame.display.set_icon(icon)
+
+    sysfont = pygame.font.get_default_font()
+
+
+    font = pygame.font.SysFont(None, 48)
+
+    img = font.render(sysfont, True, RED)
+
+
+    font1 = pygame.font.SysFont('arial', 72)
+    img1 = font1.render('GAME OVER', True, BLACK)
+
+    font2 = pygame.font.SysFont('arial', 72)
+    img2 = font2.render('COMPUTER LOSES', True, GREEN)
+
+    fonts = pygame.font.get_fonts()
+    print(len(fonts))
+    for i in range(7):
+        print(fonts[i])
+
+    running = True
+
+    background = RED
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT :
+                pygame.quit()
+                quit()
+                sys.exit()
+
+                running = False
+
+        screen.fill(background)
+
+        screen.blit(img1, (110, 200))
+        screen.blit(img2, (20, 100))
+        pygame.display.update()
+
+def floww():
+    BLACK = (0, 0, 0)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (0, 0, 255)
+
+    pygame.init()
+    screen = pygame.display.set_mode((600, 550))
+    pg.display.set_caption("ROCK IT UP!")
+    icon = pygame.image.load("rpss.jpg")
+    pygame.display.set_icon(icon)
+
+    sysfont = pygame.font.get_default_font()
+
+    font = pygame.font.SysFont(None, 48)
+
+    img = font.render(sysfont, True, RED)
+
+
+    font1 = pygame.font.SysFont('arial', 72)
+    img1 = font1.render('GAME OVER', True, BLACK)
+
+    font2 = pygame.font.SysFont('arial', 72)
+    img2 = font2.render('USER LOSES', True, GREEN)
+
+    fonts = pygame.font.get_fonts()
+    print(len(fonts))
+    for i in range(7) :
+        print(fonts[i])
+
+    running = True
+
+    background = BLUE
+    while running :
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT :
+                pygame.quit()
+                quit()
+                sys.exit()
+
+                running = False
+
+        screen.fill(background)
+
+        screen.blit(img1, (130, 200))
+        screen.blit(img2, (100, 100))
+        pygame.display.update()
+
+
+# instructions
+def instructions() :
+   instructions = True
+   while instructions :
+       for event in pygame.event.get() :
+           if event.type == pygame.QUIT :
+               pygame.quit()
+               quit()
+               sys.exit()
+
+       screen.blit(instruction_background, (0, 0))
+
+       large_text = pygame.font.SysFont('arial', 80)
+       medium_text = pygame.font.SysFont('arial', 30)
+       small_text = pygame.font.SysFont('arial', 20)
+
+       text_surface, text_rect = text_object("INSTRUCTIONS", large_text)
+       text_rect.center = (400, 100)
+       screen.blit(text_surface, text_rect)
+
+       pygame.draw.rect(screen, green, (530, 500, 150, 50))
+
+       text_surface1, text_rect1 = text_object("ROCK it Up is a two player game. ", medium_text)
+       text_rect1 = (15, 200)
+       screen.blit(text_surface1, text_rect1)
+
+       text_surface1, text_rect1 = text_object("The objective is to select a play (i.e. Rock, Paper or Scissor) that  ", medium_text)
+       text_rect1 = (15, 250)
+       screen.blit(text_surface1, text_rect1)
+       text_surface1, text_rect1 = text_object(" defeats your opponent's play. ", medium_text)
+       text_rect1 = (10, 280)
+       screen.blit(text_surface1, text_rect1)
+
+       text_surface1, text_rect1 = text_object(" 1)  Rock smashes Scissor:    Rock wins. ", medium_text)
+       text_rect1 = (10, 350)
+       screen.blit(text_surface1, text_rect1)
+
+       text_surface1, text_rect1 = text_object(" 2)  Scissors cut Paper:    Scissors wins. ", medium_text)
+       text_rect1 = (10, 380)
+       screen.blit(text_surface1, text_rect1)
+       text_surface1, text_rect1 = text_object(" 3)  Paper wraps Rock:    Paper wins. ", medium_text)
+       text_rect1 = (10, 410)
+       screen.blit(text_surface1, text_rect1)
+
+       text_surface1, text_rect1 = text_object(" 4)  Same play. Play again to win. ", medium_text)
+       text_rect1 = (10, 440)
+       screen.blit(text_surface1, text_rect1)
+
+       mouse = pygame.mouse.get_pos()
+       click = pygame.mouse.get_pressed()
+
+       if mouse[0] > 530 and mouse[0] < 680 and mouse[1] > 500 and mouse[1] < 550 :
+            pygame.draw.rect(screen, lime, ((530, 500, 150, 50)))
+            if click == (1, 0, 0) :
+                intro_loop()
+
+       else:
+            pygame.draw.rect(screen, green, (530, 500, 150, 50))
+
+       small_text = pygame.font.SysFont("arial", 30)
+       text_surface, text_rect = text_object("BACK", small_text)
+       text_rect.center = (530 + (150 / 2)), (500 + (50 / 2))
+       screen.blit(text_surface, text_rect)
+
+       pygame.display.update()
+
+
+
+
+def intro_loop() :
+    running = True
+    while running :
+        for event in pygame.event.get() :
+            if event.type == pygame.QUIT:
+                running = False
+
+        screen.blit(background_image, [0, 0])
+        pygame.display
+        pygame.draw.rect(screen, green, (330, 200, 150, 50))
+        pygame.draw.rect(screen, yellow, (330, 300, 150, 50))
+
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+
+        if mouse[0] > 330 and mouse[0] < 480 and mouse[1] > 200 and mouse[1] < 250 :
+            pygame.draw.rect(screen, lime, ((330, 200, 150, 50)))
+            if click == (1, 0, 0) :
+                rpsGame()
+                running=False
+
+        else :
+            pygame.draw.rect(screen, green, (330, 200, 150, 50))
+
+        small_text = pygame.font.SysFont('lucidaconsole', 20)
+        text_surface, text_rect = text_object("START", small_text)
+        text_rect.center = ((330 + (150 / 2)), (200 + (50 / 2)))
+        screen.blit(text_surface, text_rect)
+
+        if mouse[0] > 330 and mouse[0] < 480 and mouse[1] > 300 and mouse[1] < 350 :
+            pygame.draw.rect(screen, pastel_yellow, ((330, 300, 150, 50)))
+            if click == (1, 0, 0) :
+                instructions()
+        else :
+            pygame.draw.rect(screen, yellow, (330, 300, 150, 50))
+
+        small_text = pygame.font.SysFont('lucidaconsole', 20)
+        text_surface, text_rect = text_object("INSTRUCTIONS", small_text)
+        text_rect.center = ((330 + (150 / 2)), (300 + (50 / 2)))
+        screen.blit(text_surface, text_rect)
+
+
+        if mouse[0] > 330 and mouse[0] < 480 and mouse[1] > 400 and mouse[1] < 450:
+            pygame.draw.rect(screen, orange_red, ((330, 400, 150, 50)))
+            if click == (1, 0, 0):
+
+                quit()
+        else:
+            pygame.draw.rect(screen, red, (330, 400, 150, 50))
+        small_text = pygame.font.SysFont('lucidaconsole', 20)
+        text_surface, text_rect = text_object("QUIT", small_text)
+        text_rect.center = ((330 + (150 / 2)), (400 + (50 / 2)))
+        screen.blit(text_surface, text_rect)
+
+        pygame.display.update()
+
+
+
+
+
+intro_loop()
+game=rpsGame()
+game.game_loop()
+flow()
